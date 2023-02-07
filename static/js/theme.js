@@ -227,7 +227,7 @@ function initMermaid( update, attrs ) {
         mermaid.init();
         // zoom for Mermaid
         // https://github.com/mermaid-js/mermaid/issues/1860#issuecomment-1345440607
-        var svgs = d3.selectAll( '.mermaid svg' );
+        var svgs = d3.selectAll( '.mermaid.zoom svg' );
         svgs.each( function(){
             var svg = d3.select( this );
             svg.html( '<g>' + svg.html() + '</g>' );
@@ -335,8 +335,7 @@ function initCodeClipboard(){
 	for( var i = 0; i < codeElements.length; i++ ){
         var code = codeElements[i];
         var text = code.textContent;
-        var parent = code.parentNode;
-        var inPre = parent.tagName.toLowerCase() == 'pre';
+        var inPre = code.parentNode.tagName.toLowerCase() == 'pre';
 
         if( inPre || text.length > 5 ){
             var clip = new ClipboardJS( '.copy-to-clipboard-button', {
@@ -382,7 +381,7 @@ function initCodeClipboard(){
                 var span = document.createElement( 'span' );
                 span.classList.add( 'copy-to-clipboard' );
                 span.appendChild( clone );
-                code.replaceWith( span );
+                code.parentNode.replaceChild( span, code );
                 code = clone;
             }
             var button = document.createElement( 'span' );
@@ -394,7 +393,7 @@ function initCodeClipboard(){
                 this.removeAttribute( 'aria-label' );
                 this.classList.remove( 'tooltipped', 'tooltipped-w', 'tooltipped-se', 'tooltipped-sw' );
             });
-            code.after( button );
+            code.parentNode.insertBefore( button, code.nextSibling );
         }
     }
 }
@@ -547,6 +546,13 @@ function initMenuScrollbar(){
     // finally, we want to adjust the contents right padding if there is a scrollbar visible
     window.addEventListener('resize', adjustContentWidth );
     adjustContentWidth();
+}
+
+function imageEscapeHandler( event ){
+    if( event.key == "Escape" ){
+        var image = event.target;
+        image.click();
+    }
 }
 
 function sidebarEscapeHandler( event ){
@@ -753,6 +759,10 @@ function initSwipeHandler(){
     document.querySelectorAll( '#sidebar *' ).forEach( function(e){ e.addEventListener("touchend", handleEndX); }, false);
 }
 
+function initImage(){
+    document.querySelectorAll( '.lightbox' ).forEach( function(e){ e.addEventListener("keydown", imageEscapeHandler); }, false);
+}
+
 function clearHistory() {
     var visitedItem = baseUriFull + 'visited-url/'
     for( var item in sessionStorage ){
@@ -803,23 +813,25 @@ function scrollToFragment() {
         return;
     }
     window.setTimeout(function(){
-        var e = document.querySelector( window.location.hash );
-        if( e && e.scrollIntoView ){
-            e.scrollIntoView({
-                block: 'start',
-            });
-        }
+        try{
+            var e = document.querySelector( window.location.hash );
+            if( e && e.scrollIntoView ){
+                e.scrollIntoView({
+                    block: 'start',
+                });
+            }
+        } catch( e ){}
     }, 10);
 }
 
 function mark() {
 	// mark some additional stuff as searchable
-	var topbarLinks = document.querySelectorAll( '#topbar a:not(:has(img)):not(.btn)' );
+	var topbarLinks = document.querySelectorAll( '#topbar a:not(.topbar-link):not(.btn)' );
 	for( var i = 0; i < topbarLinks.length; i++ ){
 		topbarLinks[i].classList.add( 'highlight' );
 	}
 
-	var bodyInnerLinks = document.querySelectorAll( '#body-inner a:not(:has(img)):not(.btn):not(.lightbox):not(a[rel="footnote"])' );
+	var bodyInnerLinks = document.querySelectorAll( '#body-inner a:not(.lightbox-link):not(.btn):not(.lightbox)' );
 	for( var i = 0; i < bodyInnerLinks.length; i++ ){
 		bodyInnerLinks[i].classList.add( 'highlight' );
 	}
@@ -966,7 +978,7 @@ function elementContains( txt, e ){
     if( e ){
         var tree = document.createTreeWalker( e, 4 /* NodeFilter.SHOW_TEXT */, function( node ){
             return regex.test( node.data );
-        });
+        }, false );
         var node = null;
         while( node = tree.nextNode() ){
             nodes.push( node.parentElement );
@@ -990,12 +1002,17 @@ function initSearch() {
         e.addEventListener( 'keydown', function( event ){
             if( event.key == 'Escape' ){
                 var input = event.target;
-                input.blur();
+                var search = sessionStorage.getItem( baseUriFull+'search-value' );
+                if( !search || !search.length ){
+                    input.blur();
+                }
                 searchInputHandler( '' );
                 inputs.forEach( function( e ){
                     e.value = '';
                 });
-                documentFocus();
+                if( !search || !search.length ){
+                    documentFocus();
+                }
             }
         });
         e.addEventListener( 'input', function( event ){
@@ -1014,7 +1031,9 @@ function initSearch() {
         e.addEventListener( 'click', function(){
             inputs.forEach( function( e ){
                 e.value = '';
-                e.dispatchEvent( new Event( 'input' ) );
+                var event = document.createEvent( 'Event' );
+                event.initEvent( 'input', false, false );
+                e.dispatchEvent( event );
             });
             unmark();
         });
@@ -1032,7 +1051,9 @@ function initSearch() {
         var searchValue = sessionStorage.getItem( baseUriFull+'search-value' );
         inputs.forEach( function( e ){
             e.value = searchValue;
-            e.dispatchEvent( new Event( 'input' ) );
+            var event = document.createEvent( 'Event' );
+            event.initEvent( 'input', false, false );
+            e.dispatchEvent( event );
         });
 
         var found = elementContains( searchValue, document.querySelector( '#body-inner' ) );
@@ -1064,6 +1085,7 @@ ready( function(){
     initSwipeHandler();
     initHistory();
     initSearch();
+    initImage();
 });
 
 function useMermaid( config ){

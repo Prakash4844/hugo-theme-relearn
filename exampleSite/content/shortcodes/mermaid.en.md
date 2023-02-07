@@ -5,7 +5,7 @@ title = "Mermaid"
 
 The `mermaid` shortcode generates diagrams and flowcharts from text, in a similar manner as Markdown using the [Mermaid](https://mermaidjs.github.io/) library.
 
-{{< mermaid align="center" >}}
+{{< mermaid align="center">}}
 graph LR;
     If --> Then
     Then --> Else
@@ -33,7 +33,7 @@ To use codefence syntax you have to turn off `guessSyntax` for the `markup.highl
 {{% tab name="codefence" %}}
 
 ````md
-```mermaid { align="center" }
+```mermaid { align="center" zoom="true" }
 graph LR;
     If --> Then
     Then --> Else
@@ -44,7 +44,7 @@ graph LR;
 {{% tab name="shortcode" %}}
 
 ````go
-{{</* mermaid align="center" */>}}
+{{</* mermaid align="center" zoom="true" */>}}
 graph LR;
     If --> Then
     Then --> Else
@@ -59,6 +59,7 @@ graph LR;
   "context" .
   "content" "graph LR;\nIf --> Then\nThen --> Else"
   "align"   "center"
+  "zoom"    "true"
 )}}
 
 ````
@@ -73,6 +74,7 @@ The generated graphs can be be panned by dragging them and zoomed by using the m
 | Name                  | Default          | Notes       |
 |:----------------------|:-----------------|:------------|
 | **align**             | `center`         | Allowed values are `left`, `center` or `right`. |
+| **zoom**              | see notes        | Whether the graph is pan- and zoomable.<br><br>If not set the value is determined by the `mermaidZoom` setting of the [site](#global-configuration-file) or the [pages frontmatter](#pages-frontmatter) or `false` if not set at all.<br><br>- `false`: no pan or zoom<br>- `true`: pan and zoom active |
 | _**&lt;content&gt;**_ | _&lt;empty&gt;_  | Your Mermaid graph. |
 
 ## Configuration
@@ -94,6 +96,7 @@ To use codefence syntax you have to turn off `guessSyntax` for the `markup.highl
 ````toml
 [params]
   mermaidInitialize = "{ \"theme\": \"dark\" }"
+  mermaidZoom = true
 
 [markup]
   [markup.highlight]
@@ -108,6 +111,7 @@ To use codefence syntax you have to turn off `guessSyntax` for the `markup.highl
 ````toml
 +++
 mermaidInitialize = "{ \"theme\": \"dark\" }"
+mermaidZoom = true
 +++
 ````
 
@@ -339,10 +343,10 @@ gantt
         Add to Mermaid                      :1d
 {{< /mermaid >}}
 
-### Pie Chart
+### Pie Chart without Zoom
 
 ````go
-{{</* mermaid */>}}
+{{</* mermaid zoom="false" */>}}
 pie title Pets adopted by volunteers
     "Dogs" : 386
     "Cats" : 85
@@ -350,7 +354,7 @@ pie title Pets adopted by volunteers
 {{</* /mermaid */>}}
 ````
 
-{{< mermaid >}}
+{{< mermaid zoom="false" >}}
 pie title Pets adopted by volunteers
     "Dogs" : 386
     "Cats" : 85
@@ -519,52 +523,4 @@ C4Context
     UpdateRelStyle(SystemC, customerA, $textColor="red", $lineColor="red", $offsetX="-50", $offsetY="20")
 
     UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
-{{< /mermaid >}}
-
-### Mindmap
-
-{{% notice note %}}
-As of Mermaid version 9.2.2 this diagram type is not included in the official distribution and will not be useable in this theme.
-{{% /notice %}}
-
-````go
-{{</* mermaid */>}}
-mindmap
-  root((mindmap))
-    Origins
-      Long history
-      ::icon(fa fa-book)
-      Popularisation
-        British popular psychology author Tony Buzan
-    Research
-      On effectivness<br/>and features
-      On Automatic creation
-        Uses
-            Creative techniques
-            Strategic planning
-            Argument mapping
-    Tools
-      Pen and paper
-      Mermaid
-{{</* /mermaid */>}}
-````
-
-{{< mermaid >}}
-mindmap
-  root((mindmap))
-    Origins
-      Long history
-      ::icon(fa fa-book)
-      Popularisation
-        British popular psychology author Tony Buzan
-    Research
-      On effectivness<br/>and features
-      On Automatic creation
-        Uses
-            Creative techniques
-            Strategic planning
-            Argument mapping
-    Tools
-      Pen and paper
-      Mermaid
 {{< /mermaid >}}
