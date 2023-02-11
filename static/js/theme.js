@@ -11,6 +11,20 @@ else{
 }
 var isPrint = document.querySelector( 'body' ).classList.contains( 'print' );
 
+var isRtl = document.querySelector( 'html' ).getAttribute( 'dir' ) == 'rtl';
+var dir_padding_start = 'padding-left';
+var dir_padding_end = 'padding-right';
+var dir_key_start = 37;
+var dir_key_end = 39;
+var dir_scroll = 1;
+if( isRtl && !isIE ){
+    dir_padding_start = 'padding-right';
+    dir_padding_end = 'padding-left';
+    dir_key_start = 39;
+    dir_key_end = 37;
+    dir_scroll = -1;
+}
+
 var touchsupport = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)
 
 var formelements = 'button, datalist, fieldset, input, label, legend, meter, optgroup, option, output, progress, select, textarea';
@@ -26,7 +40,7 @@ var pst;
 var elc = document.querySelector('#body-inner');
 
 function documentFocus(){
-    document.querySelector( '#body-inner' ).focus();
+    elc.focus();
     psc && psc.scrollbarY.focus();
 }
 
@@ -45,13 +59,13 @@ function scrollbarWidth(){
 
 var scrollbarSize = scrollbarWidth();
 function adjustContentWidth(){
-    var left = parseFloat( getComputedStyle( elc ).getPropertyValue( 'padding-left' ) );
-    var right = left;
+    var start = parseFloat( getComputedStyle( elc ).getPropertyValue( dir_padding_start ) );
+    var end = start;
     if( elc.scrollHeight > elc.clientHeight ){
-        // if we have a scrollbar reduce the right margin by the scrollbar width
-        right = Math.max( 0, left - scrollbarSize );
+        // if we have a scrollbar reduce the end margin by the scrollbar width
+        end = Math.max( 0, start - scrollbarSize );
     }
-    elc.style[ 'padding-right' ] = '' + right + 'px';
+    elc.style[ dir_padding_end ] = '' + end + 'px';
 }
 
 function switchTab(tabGroup, tabId) {
@@ -59,17 +73,20 @@ function switchTab(tabGroup, tabId) {
         return !!e.querySelector( '[data-tab-item="'+tabId+'"]' );
     });
     var allTabItems = tabs && tabs.reduce( function( a, e ){
-        return a.concat( Array.from( e.querySelectorAll( '.tab-nav-button, .tab-item' ) ) );
+        return a.concat( Array.from( e.querySelectorAll( '[data-tab-item]' ) ).filter( function( es ){
+            return es.parentNode.parentNode == e;
+        }) );
     }, [] );
     var targetTabItems = tabs && tabs.reduce( function( a, e ){
-        return a.concat( Array.from( e.querySelectorAll( '[data-tab-item="'+tabId+'"]' ) ) );
+        return a.concat( Array.from( e.querySelectorAll( '[data-tab-item="'+tabId+'"]' ) ).filter( function( es ){
+            return es.parentNode.parentNode == e;
+        }) );
     }, [] );
 
     // if event is undefined then switchTab was called from restoreTabSelection
     // so it's not a button event and we don't need to safe the selction or
     // prevent page jump
     var isButtonEvent = event && event.target && event.target.getBoundingClientRect;
-
     if(isButtonEvent){
       // save button position relative to viewport
       var yposButton = event.target.getBoundingClientRect().top;
@@ -309,9 +326,8 @@ function initAnchorClipboard(){
     var clip = new ClipboardJS( '.anchor' );
     clip.on( 'success', function( e ){
         e.clearSelection();
-        var rtl = e.trigger.closest( '*[dir]' ).getAttribute( 'dir' ) == 'rtl';
         e.trigger.setAttribute( 'aria-label', window.T_Link_copied_to_clipboard );
-        e.trigger.classList.add( 'tooltipped', 'tooltipped-s'+(rtl?'e':'w') );
+        e.trigger.classList.add( 'tooltipped', 'tooltipped-s'+(isRtl?'e':'w') );
     });
 }
 
@@ -353,19 +369,17 @@ function initCodeClipboard(){
             clip.on( 'success', function( e ){
                 e.clearSelection();
                 var inPre = e.trigger.parentNode.tagName.toLowerCase() == 'pre';
-                var rtl = e.trigger.closest( '*[dir]' ).getAttribute( 'dir' ) == 'rtl';
                 e.trigger.setAttribute( 'aria-label', window.T_Copied_to_clipboard );
-                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (inPre ? 'w' : 's'+(rtl?'e':'w')) );
+                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (inPre ? 'w' : 's'+(isRtl?'e':'w')) );
             });
 
             clip.on( 'error', function( e ){
                 var inPre = e.trigger.parentNode.tagName.toLowerCase() == 'pre';
-                var rtl = e.trigger.closest( '*[dir]' ).getAttribute( 'dir' ) == 'rtl';
                 e.trigger.setAttribute( 'aria-label', fallbackMessage(e.action) );
-                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (inPre ? 'w' : 's'+(rtl?'e':'w')) );
+                e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (inPre ? 'w' : 's'+(isRtl?'e':'w')) );
                 var f = function(){
                     e.trigger.setAttribute( 'aria-label', window.T_Copied_to_clipboard );
-                    e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (inPre ? 'w' : 's'+(rtl?'e':'w')) );
+                    e.trigger.classList.add( 'tooltipped', 'tooltipped-' + (inPre ? 'w' : 's'+(isRtl?'e':'w')) );
                     document.removeEventListener( 'copy', f );
                 };
                 document.addEventListener( 'copy', f );
@@ -389,7 +403,6 @@ function initCodeClipboard(){
             button.setAttribute( 'title', window.T_Copy_to_clipboard );
             button.innerHTML = '<i class="fas fa-copy"></i>';
             button.addEventListener( 'mouseleave', function() {
-                var rtl = this.closest( '*[dir]' ).getAttribute( 'dir' ) == 'rtl';
                 this.removeAttribute( 'aria-label' );
                 this.classList.remove( 'tooltipped', 'tooltipped-w', 'tooltipped-se', 'tooltipped-sw' );
             });
@@ -413,41 +426,41 @@ function initArrowNav(){
     // avoid prev/next navigation if we are not at the start/end of the
     // horizontal area
     var el = document.querySelector('#body-inner');
-    var scrollLeft = 0;
-    var scrollRight = 0;
+    var scrollStart = 0;
+    var scrollEnd = 0;
     document.addEventListener('keydown', function(event){
         if( !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey ){
-            if( event.which == '37' ){
-                if( !scrollLeft && +el.scrollLeft.toFixed() <= 0 ){
+            if( event.which == dir_key_start ){
+                if( !scrollStart && +el.scrollLeft.toFixed()*dir_scroll <= 0 ){
                     prev && prev.click();
                 }
-                else if( scrollLeft != -1 ){
-                    clearTimeout( scrollLeft );
+                else if( scrollStart != -1 ){
+                    clearTimeout( scrollStart );
                 }
-                scrollLeft = -1;
+                scrollStart = -1;
             }
-            if( event.which == '39' ){
-                if( !scrollRight && +el.scrollLeft.toFixed() + +el.clientWidth.toFixed() >= +el.scrollWidth.toFixed() ){
+            if( event.which == dir_key_end ){
+                if( !scrollEnd && +el.scrollLeft.toFixed()*dir_scroll + +el.clientWidth.toFixed() >= +el.scrollWidth.toFixed() ){
                     next && next.click();
                 }
-                else if( scrollRight != -1 ){
-                    clearTimeout( scrollRight );
+                else if( scrollEnd != -1 ){
+                    clearTimeout( scrollEnd );
                 }
-                scrollRight = -1;
+                scrollEnd = -1;
             }
         }
     });
     document.addEventListener('keyup', function(event){
         if( !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey ){
-            if( event.which == '37' ){
+            if( event.which == dir_key_start ){
                 // check for false indication if keyup is delayed after navigation
-                if( scrollLeft == -1 ){
-                    scrollLeft = setTimeout( function(){ scrollLeft = 0; }, 300 );
+                if( scrollStart == -1 ){
+                    scrollStart = setTimeout( function(){ scrollStart = 0; }, 300 );
                 }
             }
-            if( event.which == '39' ){
-                if( scrollRight == -1 ){
-                    scrollRight = setTimeout( function(){ scrollRight = 0; }, 300 );
+            if( event.which == dir_key_end ){
+                if( scrollEnd == -1 ){
+                    scrollEnd = setTimeout( function(){ scrollEnd = 0; }, 300 );
                 }
             }
         }
@@ -456,7 +469,7 @@ function initArrowNav(){
     // avoid keyboard navigation for input fields
     document.querySelectorAll( formelements ).forEach( function( e ){
         e.addEventListener( 'keydown', function( event ){
-            if( event.which == 37 || event.which == 39 ){
+            if( event.which == dir_key_start || event.which == dir_key_end ){
                 event.stopPropagation();
             }
         });
@@ -531,19 +544,24 @@ function initMenuScrollbar(){
     // on resize, we have to redraw the scrollbars to let new height
     // affect their size
     window.addEventListener('resize', function(){
-        pst && pst.update();
-        psm && psm.update();
-        psc && psc.update();
+        pst && setTimeout( function(){ pst.update(); }, 10 );
+        psm && setTimeout( function(){ psm.update(); }, 10 );
+        psc && setTimeout( function(){ psc.update(); }, 10 );
     });
     // now that we may have collapsible menus, we need to call a resize
     // for the menu scrollbar if sections are expanded/collapsed
     document.querySelectorAll('#sidebar .collapsible-menu input.toggle').forEach( function(e){
         e.addEventListener('change', function(){
-            psm && psm.update();
+            psm && setTimeout( function(){ psm.update(); }, 10 );
         });
     });
+    // bugfix for PS in RTL mode: the initial scrollbar position is off;
+    // calling update() once, fixes this
+    pst && setTimeout( function(){ pst.update(); }, 10 );
+    psm && setTimeout( function(){ psm.update(); }, 10 );
+    psc && setTimeout( function(){ psc.update(); }, 10 );
 
-    // finally, we want to adjust the contents right padding if there is a scrollbar visible
+    // finally, we want to adjust the contents end padding if there is a scrollbar visible
     window.addEventListener('resize', adjustContentWidth );
     adjustContentWidth();
 }
@@ -649,7 +667,7 @@ function showToc(){
     var b = document.querySelector( 'body' );
     b.classList.toggle( 'toc-flyout' );
     if( b.classList.contains( 'toc-flyout' ) ){
-        pst && pst.update();
+        pst && setTimeout( function(){ pst.update(); }, 10 );
         pst && pst.scrollbarY.focus();
         document.querySelector( '.toc-wrapper ul a' ).focus();
         document.addEventListener( 'keydown', tocEscapeHandler );
@@ -863,7 +881,7 @@ function mark() {
 			parent = parent.parentNode;
 		}
 	}
-    psm && psm.update();
+    psm && setTimeout( function(){ psm.update(); }, 10 );
 }
 window.relearn.markSearch = mark;
 
@@ -951,7 +969,7 @@ function unmark() {
 
 	var highlighted = document.querySelectorAll( '.highlightable' );
     unhighlight( highlighted, { element: 'mark' } );
-    psm && psm.update();
+    psm && setTimeout( function(){ psm.update(); }, 10 );
 }
 
 function unhighlight( es, options ){
