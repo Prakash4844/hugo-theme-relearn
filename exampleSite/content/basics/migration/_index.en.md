@@ -18,7 +18,23 @@ This document shows you what's new in the latest release. For a detailed list of
 
 ---
 
-## 5.12.0 (not yet released)
+## 5.12.0 (2023-03-03)
+
+- {{% badge style="note" title=" " %}}Change{{% /badge %}} In the effort to comply with WCAG standards, the implementation of the collapsible menu was changed (again). While Internet Explorer 11 has issues in displaying it, the functionality still works.
+
+- {{% badge style="info" icon="plus-circle" title=" " %}}New{{% /badge %}} Support for the great [VSCode Front Matter extension](https://github.com/estruyf/vscode-front-matter) which provides on-premise CMS capabilties to Hugo.
+
+  The theme provides Front Matter snippets for its shortcodes. Currently only English and German is supported. Put a reference into your `frontmatter.json` like this
+
+  ````json
+  {
+    ...
+    "frontMatter.extends": [
+        "./vscode-frontmatter/snippets.en.json"
+    ]
+    ...
+  }
+  ````
 
 - {{% badge style="info" icon="plus-circle" title=" " %}}New{{% /badge %}} Support for languages that are written right to left (like Arabic) is now complete and extended to the menu, the top navigation bar and print. You can experience this in the [pirate translation]({{%relref path="basics/migration" lang="pir" %}}). This feature is not available in Internet Explorer 11.
 
@@ -33,7 +49,7 @@ This document shows you what's new in the latest release. For a detailed list of
   In case you made changes to the theme that are dependend on this library you can place a copy of jQuery into your `static/js` directory and load it from your own `layouts/partials/custom-header.html` like this:
 
   ````html
-  <script src="{{"js/jquery.min.js"| relURL}}{{ if $assetBusting }}?{{ now.Unix }}{{ end }}" defer></script>
+  <script src="{{"js/jquery.min.js"| relURL}}" defer></script>
   ````
 
 - {{% badge style="note" title=" " %}}Change{{% /badge %}} [Mermaid]({{% relref "shortcodes/mermaid#parameter" %}}) diagrams can now be configured for pan and zoom on site-, page-level or individually for each graph.

@@ -1,5 +1,50 @@
 # Changelog
 
+## 5.12.2 (2023-03-03)
+
+### Fixes
+
+- [**bug**] menu: fix state for alwaysopen=false + collapsibleMenu=false [#498](https://github.com/McShelby/hugo-theme-relearn/issues/498)
+
+---
+
+## 5.12.1 (2023-02-26)
+
+### Enhancements
+
+- [**feature**] variant: add relearn bright theme [#493](https://github.com/McShelby/hugo-theme-relearn/issues/493)
+
+### Fixes
+
+- [**bug**] generator: fix setting of colors [#494](https://github.com/McShelby/hugo-theme-relearn/issues/494)
+
+---
+
+## 5.12.0 (2023-02-24)
+
+### Enhancements
+
+- [**feature**] frontmatter: support VSCode Front Matter extension [#481](https://github.com/McShelby/hugo-theme-relearn/issues/481)
+- [**feature**] theme: make expand and image ids stable [#477](https://github.com/McShelby/hugo-theme-relearn/issues/477)
+- [**feature**] variant: set scrollbar color to dark for dark variants [#471](https://github.com/McShelby/hugo-theme-relearn/issues/471)
+- [**feature**] i18n: add full RTL support [#470](https://github.com/McShelby/hugo-theme-relearn/issues/470)
+- [**feature**] piratify: fix some quirks, arrr [#469](https://github.com/McShelby/hugo-theme-relearn/issues/469)
+- [**feature**][**change**] theme: optimization for huge screen sizes [#466](https://github.com/McShelby/hugo-theme-relearn/issues/466)
+
+### Fixes
+
+- [**bug**] i18n: write code ltr even for rtl languages [#492](https://github.com/McShelby/hugo-theme-relearn/issues/492)
+- [**bug**] anchor: fix link in FF when served from filesystem [#482](https://github.com/McShelby/hugo-theme-relearn/issues/482)
+- [**bug**] shortcodes: don't break build and render for invalid parameters [#480](https://github.com/McShelby/hugo-theme-relearn/issues/480)
+- [**bug**] nav: restore scroll position on browser back [#476](https://github.com/McShelby/hugo-theme-relearn/issues/476)
+- [**bug**] variant: avoid style leak for auto style [#473](https://github.com/McShelby/hugo-theme-relearn/issues/473)
+
+### Maintenance
+
+- [**task**] build: add imagebot [#485](https://github.com/McShelby/hugo-theme-relearn/issues/485)
+
+---
+
 ## 5.11.2 (2023-02-07)
 
 ### Fixes
